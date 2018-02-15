@@ -5041,8 +5041,43 @@ _ACEOF
 fi
 
 
-# Set some values
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if ${CXX-c++} supports GCC native atomic operations" >&5
+$as_echo_n "checking if ${CXX-c++} supports GCC native atomic operations... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
+#include <sched.h>
+
+int
+main ()
+{
+
+    int a = 10;
+    __sync_fetch_and_add(&a, 10);
+    __sync_val_compare_and_swap(&a, 0, 10);
+    sched_yield();
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+   enable_gcc_atomic_ops=yes
+
+else
+
+   enable_gcc_atomic_ops=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_gcc_atomic_ops" >&5
+$as_echo "$enable_gcc_atomic_ops" >&6; }
+if test "$enable_gcc_atomic_ops" = "no"; then
+    as_fn_error $? "GCC native atomic operations were not found" "$LINENO" 5
+fi
+
+# Set some values
 LIBS="-pthread -Llib"
 CFLAGS="-std=c11 -O2 -Wall -fPIC -Iinclude"
 CPPFLAGS="-Iinclude"

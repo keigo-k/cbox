@@ -30,8 +30,26 @@ AC_CHECK_LIB(stdc++, main)
 AC_CHECK_LIB(pthread, pthread_create)
 AC_CHECK_LIB(pthread, pthread_join)
 
-# Set some values
+AC_MSG_CHECKING([if ${CXX-c++} supports GCC native atomic operations])
+AC_TRY_COMPILE(
+[
+#include <sched.h>
+],[
+    int a = 10;
+    __sync_fetch_and_add(&a, 10);
+    __sync_val_compare_and_swap(&a, 0, 10);
+    sched_yield();
+],[
+   enable_gcc_atomic_ops=yes
+],[
+   enable_gcc_atomic_ops=no
+])
+AC_MSG_RESULT([$enable_gcc_atomic_ops])
+if test "$enable_gcc_atomic_ops" = "no"; then
+    AC_MSG_ERROR([GCC native atomic operations were not found])
+fi
 
+# Set some values
 LIBS="-pthread -Llib"
 CFLAGS="-std=c11 -O2 -Wall -fPIC -Iinclude"
 CPPFLAGS="-Iinclude"
