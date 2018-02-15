@@ -1,6 +1,10 @@
 bin/
 testbin/
 build/
+autom4te.cache/
 
+Makefile
+config.log
+config.status
 *.o
 *.swp
