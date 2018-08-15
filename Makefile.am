@@ -1,3 +1,11 @@
+# Set compile options
+LIBS=-pthread -Llib
+CPPLIBS=-lyaml-cpp
+CFLAGS=-std=c11 -O2 -Wall -fPIC -Iinclude
+CPPFLAGS=-Iinclude -Iextra/include
+CXXFLAGS=-std=c++11 -O2 -Wall -fPIC
+LDFLAGS=-shared
+
 SRCDIR = src
 INCDIR = include
 TESTDIR = test
@@ -36,33 +44,43 @@ CPP_TEST_TARGETS = $(addprefix $(TESTBINDIR)/,$(notdir $(CPP_TEST_OBJS:.o=)))
 
 all: $(C_TARGETS) $(CPP_TARGETS) $(LIB_STATIC_NAME) $(LIB_DINAMIC_NAME)
 
-$(C_TARGETS): $(C_OBJS) $(C_TARGET_OBJS)
-	$(CC) $(CFLAGS) $(LIBS) -o $@ $(C_OBJS) $(filter %$(notdir $@).o,$(C_TARGET_OBJS))
+$(LIBDIR):
+	@mkdir -p $(LIBDIR)
 
-$(CPP_TARGETS): $(CPP_OBJS) $(CPP_TARGET_OBJS)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LIBS) -o $@ $(CPP_OBJS) $(filter %$(notdir $@).o,$(CPP_TARGET_OBJS))
+$(BINDIR):
+	@mkdir -p $(BINDIR)
+
+$(TESTBINDIR):
+	@mkdir -p $(TESTBINDIR)
+
+$(C_TARGETS): $(BINDIR) $(C_OBJS) $(C_TARGET_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(C_OBJS) $(filter %$(notdir $@).o,$(C_TARGET_OBJS)) $(LIBS)
+
+$(CPP_TARGETS): $(BINDIR) $(CPP_OBJS) $(CPP_TARGET_OBJS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ $(CPP_OBJS) $(filter %$(notdir $@).o,$(CPP_TARGET_OBJS)) $(CPPLIBS) $(LIBS)
 
 $(C_TARGET_OBJS): $(C_TARGET_SRCS)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.c))
+	$(CC) $(CFLAGS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.c))
 
 $(CPP_TARGET_OBJS): $(CPP_TARGET_SRCS)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LIBS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.cpp))
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.cpp))
 
-$(C_OBJS): $(C_SRCS)
+$(C_OBJS): $(LIBDIR) $(C_SRCS)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.c))
+	$(CC) $(CFLAGS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.c))
 
-$(CPP_OBJS): $(CPP_SRCS)
+$(CPP_OBJS): $(LIBDIR) $(CPP_SRCS)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LIBS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.cpp))
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(patsubst $(BUILDDIR)%,$(SRCDIR)%,$(@:.o=.cpp))
+
 
 $(LIB_STATIC_NAME): $(C_OBJS) $(CPP_OBJS)
 	$(AR) $(ARFLAGS) $@ $^
 
 $(LIB_DINAMIC_NAME): $(C_OBJS) $(CPP_OBJS)
-	$(CXX) $(LIBS) $(LDFLAGS) -o $@ $^
+	$(CXX) $(LDFLAGS) -o $@ $^ $(CPPLIBS) $(LIBS)
 
 
 install: $(INSTALLED_BINS) $(INSTALLED_INCS) $(INSTALLED_LIBS)
@@ -89,17 +107,17 @@ clean:
 
 test: $(C_TEST_TARGETS) $(CPP_TEST_TARGETS)
 
-$(C_TEST_TARGETS): $(C_OBJS) $(C_TEST_OBJS)
-	$(CC) $(CFLAGS) $(LIBS) -o $@ $(C_OBJS) $(filter %$(notdir $@).o,$(C_TEST_OBJS))
+$(C_TEST_TARGETS): $(TESTBINDIR) $(C_OBJS) $(C_TEST_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(C_OBJS) $(filter %$(notdir $@).o,$(C_TEST_OBJS)) $(LIBS)
 
-$(CPP_TEST_TARGETS): $(CPP_OBJS) $(CPP_TEST_OBJS)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LIBS) -o $@ $(CPP_OBJS) $(filter %$(notdir $@).o,$(CPP_TEST_OBJS))
+$(CPP_TEST_TARGETS): $(TESTBINDIR) $(CPP_OBJS) $(CPP_TEST_OBJS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ $(CPP_OBJS) $(filter %$(notdir $@).o,$(CPP_TEST_OBJS)) $(LIBS) $(CPPLIBS)
 
 $(C_TEST_OBJS): $(C_TEST_SRCS)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $(patsubst $(BUILDDIR)%,$(TESTDIR)%,$(@:.o=.c))
+	$(CC) $(CFLAGS) -c -o $@ $(patsubst $(BUILDDIR)%,$(TESTDIR)%,$(@:.o=.c))
 
 $(CPP_TEST_OBJS): $(CPP_TEST_SRCS)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LIBS) -c -o $@ $(patsubst $(BUILDDIR)%,$(TESTDIR)%,$(@:.o=.cpp))
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(patsubst $(BUILDDIR)%,$(TESTDIR)%,$(@:.o=.cpp))
 

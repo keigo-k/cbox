@@ -17,9 +17,7 @@ AC_PROG_MAKE_SET
 
 AC_LANG_C
 AC_LANG_CPLUSPLUS
-
 # Checks for libraries.
-
 # Checks for header files.
 AC_CHECK_HEADERS(pthread.h)
 
@@ -48,13 +46,6 @@ AC_MSG_RESULT([$enable_gcc_atomic_ops])
 if test "$enable_gcc_atomic_ops" = "no"; then
     AC_MSG_ERROR([GCC native atomic operations were not found])
 fi
-
-# Set some values
-LIBS="-pthread -Llib"
-CFLAGS="-std=c11 -O2 -Wall -fPIC -Iinclude"
-CPPFLAGS="-Iinclude"
-CXXFLAGS="-std=c++11 -O2 -Wall -fPIC"
-LDFLAGS="-shared"
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

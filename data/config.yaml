@@ -1,0 +1,12 @@
+default_timeout: 1
+valid_parser: ["abc", "ghi"]
+apis:
+  abc:
+    url_base: http://abc.com
+    parser: abcparser
+  def:
+    url_base: http://abc.com
+    parser: defparser
+  ghi:
+    url_base: http://abc.com
+    parser: ghiparser

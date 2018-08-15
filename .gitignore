@@ -1,10 +1,16 @@
 bin/
+lib/
 testbin/
 build/
 autom4te.cache/
 
 Makefile
+Makefile.in
 config.log
 config.status
+aclocal.m4
+install-sh
+compile
+missing
 *.o
 *.swp
